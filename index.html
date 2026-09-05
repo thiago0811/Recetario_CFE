@@ -552,7 +552,7 @@
   <main>
     <div class="recipe-meta-card">
       <div>
-        <h2 id="currentRecipeTitle" class="recipe-title">Cargando...</h2>
+        <h2 id="currentRecipeTitle" class="recipe-title">Cargando receta...</h2>
         <span id="currentRecipeCategory" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;"></span>
       </div>
 
@@ -568,7 +568,8 @@
         </div>
 
         <button id="btnResetCompleted" title="Desmarcar ingredientes tachados">↺ Desmarcar Todo</button>
-        <button id="btnDeleteCurrent" style="color: #dc2626;" title="Eliminar receta actual">🗑️ Eliminar</button>
+        <button id="btnRestoreDefaults" title="Restablecer recetas originales">🔄 Restaurar Ejemplos</button>
+        <button id="btnDeleteCurrent" style="color: #dc2626;" title="Eliminar receta actual">🗑️</button>
       </div>
     </div>
 
@@ -645,7 +646,7 @@
       </div>
       <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
         Para que la página procese fotos y textos de forma gratuita, ingresa tu <strong>API Key de Gemini</strong>. 
-        Se guarda de forma 100% segura en tu navegador local (nunca se comparte públicamente).
+        Se guarda de forma 100% privada en tu navegador.
       </p>
 
       <div style="background: #f1f5f9; padding: 0.75rem; border-radius: 6px; font-size: 0.8rem; margin-bottom: 1rem;">
@@ -910,13 +911,37 @@
     let timerInitialSeconds = 0;
     let timerIsPaused = false;
 
+    function safeStorageGet(key) {
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        console.warn("Storage inaccesible:", e);
+        return null;
+      }
+    }
+
+    function safeStorageSet(key, val) {
+      try {
+        localStorage.setItem(key, val);
+      } catch (e) {
+        console.warn("No se pudo guardar en storage:", e);
+      }
+    }
+
     function initStorage() {
-      const stored = localStorage.getItem("cfe_recipes_v3");
+      const stored = safeStorageGet("cfe_recipes_v3");
       if (stored) {
         try {
-          recipes = JSON.parse(stored);
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].steps) {
+            recipes = parsed;
+          } else {
+            recipes = DEFAULT_RECIPES;
+            saveToStorage();
+          }
         } catch (e) {
           recipes = DEFAULT_RECIPES;
+          saveToStorage();
         }
       } else {
         recipes = DEFAULT_RECIPES;
@@ -925,14 +950,16 @@
     }
 
     function saveToStorage() {
-      localStorage.setItem("cfe_recipes_v3", JSON.stringify(recipes));
+      safeStorageSet("cfe_recipes_v3", JSON.stringify(recipes));
     }
 
     function formatIngredient(item, scale) {
-      if (!item.amount) return item.name;
-      const scaled = item.amount * scale;
+      if (!item) return "";
+      const amt = item.amount !== undefined ? item.amount : (item.amountMetric || null);
+      if (amt === null || amt === undefined) return item.name || "";
+      const scaled = amt * scale;
       const formattedNum = Number.isInteger(scaled) ? scaled : scaled.toFixed(1).replace(/\\.0$/, "");
-      return `${formattedNum} ${item.unit || "g"} ${item.name}`.trim();
+      return `${formattedNum} ${item.unit || item.unitMetric || "g"} ${item.name}`.trim();
     }
 
     function playTimerBeep() {
@@ -988,151 +1015,173 @@
     }
 
     function renderTable() {
-      if (!currentRecipe) return;
+      try {
+        if (!currentRecipe || !currentRecipe.steps) {
+          currentRecipe = DEFAULT_RECIPES[0];
+        }
 
-      document.getElementById("currentRecipeTitle").innerText = currentRecipe.title;
-      document.getElementById("currentRecipeCategory").innerText = currentRecipe.category || "Receta";
+        document.getElementById("currentRecipeTitle").innerText = currentRecipe.title || "Sin título";
+        document.getElementById("currentRecipeCategory").innerText = currentRecipe.category || "Receta";
 
-      const table = document.getElementById("recipeFlowTable");
-      table.innerHTML = "";
+        const table = document.getElementById("recipeFlowTable");
+        table.innerHTML = "";
 
-      const flatIngredients = [];
-      const stageRows = [];
+        const flatIngredients = [];
+        const stageRows = [];
 
-      currentRecipe.steps.forEach((step, stepIndex) => {
-        const startRow = flatIngredients.length;
-        if (step.items && step.items.length > 0) {
-          step.items.forEach(item => {
-            flatIngredients.push({ ...item, stepIndex });
+        currentRecipe.steps.forEach((step, stepIndex) => {
+          const startRow = flatIngredients.length;
+          if (step.items && step.items.length > 0) {
+            step.items.forEach(item => {
+              flatIngredients.push({ ...item, stepIndex });
+            });
+          }
+          const endRow = flatIngredients.length - 1;
+          stageRows.push({ startRow, endRow: Math.max(startRow, endRow), count: step.items ? step.items.length : 0 });
+        });
+
+        const totalRows = flatIngredients.length;
+        const numColumns = currentRecipe.steps.length;
+        const totalColspan = numColumns + 1;
+
+        if (currentRecipe.prepInstructions && currentRecipe.prepInstructions.length > 0) {
+          currentRecipe.prepInstructions.forEach(instr => {
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.className = "prep-header-cell";
+            td.colSpan = totalColspan;
+            td.innerText = instr;
+            tr.appendChild(td);
+            table.appendChild(tr);
           });
         }
-        const endRow = flatIngredients.length - 1;
-        stageRows.push({ startRow, endRow: Math.max(startRow, endRow), count: step.items ? step.items.length : 0 });
-      });
 
-      const totalRows = flatIngredients.length;
-      const numColumns = currentRecipe.steps.length;
-      const totalColspan = numColumns + 1;
-
-      if (currentRecipe.prepInstructions && currentRecipe.prepInstructions.length > 0) {
-        currentRecipe.prepInstructions.forEach(instr => {
+        if (totalRows === 0) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
-          td.className = "prep-header-cell";
-          td.colSpan = totalColspan;
-          td.innerText = instr;
+          td.innerText = "Esta receta no contiene ingredientes.";
           tr.appendChild(td);
           table.appendChild(tr);
-        });
-      }
+          return;
+        }
 
-      const grid = Array.from({ length: totalRows }, () => Array(numColumns).fill(null));
-      let accumulatedRows = 0;
+        const grid = Array.from({ length: totalRows }, () => Array(numColumns).fill(null));
+        let accumulatedRows = 0;
 
-      currentRecipe.steps.forEach((step, colIndex) => {
-        const stage = stageRows[colIndex];
+        currentRecipe.steps.forEach((step, colIndex) => {
+          const stage = stageRows[colIndex];
 
-        if (step.mergeAll) {
-          grid[0][colIndex] = {
-            type: "action",
-            step: step,
-            rowspan: totalRows,
-            id: `action-${currentRecipe.id}-${colIndex}`
-          };
-          for (let r = 1; r < totalRows; r++) grid[r][colIndex] = { type: "covered" };
-        } else if (step.mergeWithPrevious) {
-          accumulatedRows += stage.count;
-          const startRow = 0;
-          const rowspan = accumulatedRows;
-
-          grid[startRow][colIndex] = {
-            type: "action",
-            step: step,
-            rowspan: rowspan,
-            id: `action-${currentRecipe.id}-${colIndex}`
-          };
-          for (let r = 1; r < rowspan; r++) grid[r][colIndex] = { type: "covered" };
-        } else {
-          accumulatedRows = stage.count;
-          if (stage.count > 0) {
-            grid[stage.startRow][colIndex] = {
+          if (step.mergeAll) {
+            grid[0][colIndex] = {
               type: "action",
               step: step,
-              rowspan: stage.count,
+              rowspan: totalRows,
               id: `action-${currentRecipe.id}-${colIndex}`
             };
-            for (let r = stage.startRow + 1; r <= stage.endRow; r++) grid[r][colIndex] = { type: "covered" };
-          }
-        }
-      });
+            for (let r = 1; r < totalRows; r++) grid[r][colIndex] = { type: "covered" };
+          } else if (step.mergeWithPrevious) {
+            accumulatedRows += stage.count;
+            const startRow = 0;
+            const rowspan = accumulatedRows;
 
-      for (let c = 0; c < numColumns; c++) {
-        let r = 0;
-        while (r < totalRows) {
-          if (grid[r][c] === null) {
-            let emptySpan = 1;
-            while (r + emptySpan < totalRows && grid[r + emptySpan][c] === null) {
-              emptySpan++;
-            }
-            grid[r][c] = { type: "spacer", rowspan: emptySpan };
-            for (let k = 1; k < emptySpan; k++) grid[r + k][c] = { type: "covered" };
-            r += emptySpan;
-          } else {
-            r++;
-          }
-        }
-      }
-
-      flatIngredients.forEach((ing, rowIndex) => {
-        const tr = document.createElement("tr");
-
-        const tdIng = document.createElement("td");
-        tdIng.className = "ingredient-cell";
-        const ingId = `ing-${currentRecipe.id}-${rowIndex}`;
-        if (completedItems.has(ingId)) tdIng.classList.add("completed");
-        tdIng.innerText = formatIngredient(ing, currentScale);
-        tdIng.onclick = () => {
-          tdIng.classList.toggle("completed");
-          if (tdIng.classList.contains("completed")) completedItems.add(ingId);
-          else completedItems.delete(ingId);
-        };
-        tr.appendChild(tdIng);
-
-        for (let colIndex = 0; colIndex < numColumns; colIndex++) {
-          const cell = grid[rowIndex][colIndex];
-          if (!cell || cell.type === "covered") continue;
-
-          const tdAction = document.createElement("td");
-          if (cell.rowspan > 1) tdAction.rowSpan = cell.rowspan;
-
-          if (cell.type === "action") {
-            tdAction.className = "action-cell";
-            const step = cell.step;
-            
-            let contentHtml = `<div>${step.action.replace(/\\\\n/g, "<br>").replace(/\\n/g, "<br>")}</div>`;
-
-            if (step.timerMinutes) {
-              contentHtml += `<button class="timer-badge" onclick="event.stopPropagation(); startTimer(${step.timerMinutes})">⏱️ ${step.timerMinutes} min</button>`;
-            }
-
-            tdAction.innerHTML = contentHtml;
-            if (completedItems.has(cell.id)) tdAction.classList.add("completed");
-
-            tdAction.onclick = (e) => {
-              if (e.target.tagName === 'BUTTON') return;
-              tdAction.classList.toggle("completed");
-              if (tdAction.classList.contains("completed")) completedItems.add(cell.id);
-              else completedItems.delete(cell.id);
+            grid[startRow][colIndex] = {
+              type: "action",
+              step: step,
+              rowspan: rowspan,
+              id: `action-${currentRecipe.id}-${colIndex}`
             };
-          } else if (cell.type === "spacer") {
-            tdAction.className = "empty-spacer-cell";
+            for (let r = 1; r < rowspan; r++) grid[r][colIndex] = { type: "covered" };
+          } else {
+            accumulatedRows = stage.count;
+            if (stage.count > 0) {
+              grid[stage.startRow][colIndex] = {
+                type: "action",
+                step: step,
+                rowspan: stage.count,
+                id: `action-${currentRecipe.id}-${colIndex}`
+              };
+              for (let r = stage.startRow + 1; r <= stage.endRow; r++) grid[r][colIndex] = { type: "covered" };
+            }
           }
+        });
 
-          tr.appendChild(tdAction);
+        for (let c = 0; c < numColumns; c++) {
+          let r = 0;
+          while (r < totalRows) {
+            if (grid[r][c] === null) {
+              let emptySpan = 1;
+              while (r + emptySpan < totalRows && grid[r + emptySpan][c] === null) {
+                emptySpan++;
+              }
+              grid[r][c] = { type: "spacer", rowspan: emptySpan };
+              for (let k = 1; k < emptySpan; k++) grid[r + k][c] = { type: "covered" };
+              r += emptySpan;
+            } else {
+              r++;
+            }
+          }
         }
 
-        table.appendChild(tr);
-      });
+        flatIngredients.forEach((ing, rowIndex) => {
+          const tr = document.createElement("tr");
+
+          const tdIng = document.createElement("td");
+          tdIng.className = "ingredient-cell";
+          const ingId = `ing-${currentRecipe.id}-${rowIndex}`;
+          if (completedItems.has(ingId)) tdIng.classList.add("completed");
+          tdIng.innerText = formatIngredient(ing, currentScale);
+          tdIng.onclick = () => {
+            tdIng.classList.toggle("completed");
+            if (tdIng.classList.contains("completed")) completedItems.add(ingId);
+            else completedItems.delete(ingId);
+          };
+          tr.appendChild(tdIng);
+
+          for (let colIndex = 0; colIndex < numColumns; colIndex++) {
+            const cell = grid[rowIndex][colIndex];
+            if (!cell || cell.type === "covered") continue;
+
+            const tdAction = document.createElement("td");
+            if (cell.rowspan > 1) tdAction.rowSpan = cell.rowspan;
+
+            if (cell.type === "action") {
+              tdAction.className = "action-cell";
+              const step = cell.step;
+              
+              let contentHtml = `<div>${(step.action || "").replace(/\\\\n/g, "<br>").replace(/\\n/g, "<br>")}</div>`;
+
+              if (step.timerMinutes) {
+                contentHtml += `<button class="timer-badge" onclick="event.stopPropagation(); startTimer(${step.timerMinutes})">⏱️ ${step.timerMinutes} min</button>`;
+              }
+
+              tdAction.innerHTML = contentHtml;
+              if (completedItems.has(cell.id)) tdAction.classList.add("completed");
+
+              tdAction.onclick = (e) => {
+                if (e.target.tagName === 'BUTTON') return;
+                tdAction.classList.toggle("completed");
+                if (tdAction.classList.contains("completed")) completedItems.add(cell.id);
+                else completedItems.delete(cell.id);
+              };
+            } else if (cell.type === "spacer") {
+              tdAction.className = "empty-spacer-cell";
+            }
+
+            tr.appendChild(tdAction);
+          }
+
+          table.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Error al renderizar tabla:", err);
+        document.getElementById("currentRecipeTitle").innerText = "Error al cargar la receta";
+        document.getElementById("recipeFlowTable").innerHTML = `
+          <tr><td style="padding:20px; text-align:center; color:#dc2626;">
+            Ocurrió un inconveniente al cargar esta receta.<br><br>
+            <button onclick="restoreDefaultRecipes()" class="btn-primary" style="padding:8px 16px;">Restablecer Recetas de Fábrica</button>
+          </td></tr>
+        `;
+      }
     }
 
     function updateRecipeSelector() {
@@ -1146,6 +1195,15 @@
       });
       if (currentRecipe) sel.value = currentRecipe.id;
     }
+
+    window.restoreDefaultRecipes = function() {
+      recipes = DEFAULT_RECIPES;
+      saveToStorage();
+      currentRecipe = recipes[0];
+      completedItems.clear();
+      updateRecipeSelector();
+      renderTable();
+    };
 
     function calculateConversion() {
       const amount = parseFloat(document.getElementById("convAmount").value) || 0;
@@ -1284,7 +1342,7 @@
     };
 
     async function executeGeminiExtraction() {
-      const apiKey = localStorage.getItem("gemini_api_key");
+      const apiKey = safeStorageGet("gemini_api_key");
       if (!apiKey) {
         document.getElementById("aiModal").style.display = "none";
         document.getElementById("settingsModal").style.display = "flex";
@@ -1312,7 +1370,7 @@ REGLAS CRÍTICAS:
    - "mergeAll": true únicamente en el paso final (ej. horneado o hervor final) para abarcar toda la mezcla.
 3. INSTRUCCIONES PREVIAS ("prepInstructions"): Pasos de mise en place (ej. "Precalentar horno", "Enmantecar molde").
 
-Responde ÚNICAMENTE un objeto JSON válido con la siguiente estructura (sin bloques de código markdown ni texto adicional):
+Responde ÚNICAMENTE un objeto JSON válido con la siguiente estructura:
 {
   "title": "Nombre de la Receta",
   "category": "Pastelería / Platos / Salsas",
@@ -1410,9 +1468,9 @@ Responde ÚNICAMENTE un objeto JSON válido con la siguiente estructura (sin blo
       }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    function initApp() {
       initStorage();
-      currentRecipe = recipes[0];
+      currentRecipe = recipes[0] || DEFAULT_RECIPES[0];
       updateRecipeSelector();
       renderTable();
 
@@ -1437,6 +1495,12 @@ Responde ÚNICAMENTE un objeto JSON válido con la siguiente estructura (sin blo
       document.getElementById("btnResetCompleted").addEventListener("click", () => {
         completedItems.clear();
         renderTable();
+      });
+
+      document.getElementById("btnRestoreDefaults").addEventListener("click", () => {
+        if (confirm("¿Deseas restablecer las recetas de ejemplo?")) {
+          restoreDefaultRecipes();
+        }
       });
 
       document.getElementById("btnPrint").addEventListener("click", () => window.print());
@@ -1487,9 +1551,6 @@ Responde ÚNICAMENTE un objeto JSON válido con la siguiente estructura (sin blo
             const imported = JSON.parse(ev.target.result);
             if (Array.isArray(imported) && imported.length > 0) {
               recipes = imported;
-              saveToStorage();
-              currentRecipe = recipes[0];
-              updateRecipeSelectorrecipes = imported;
               saveToStorage();
               currentRecipe = recipes[0];
               updateRecipeSelector();
@@ -1545,16 +1606,16 @@ Responde ÚNICAMENTE un objeto JSON válido con la siguiente estructura (sin blo
 
       const settingsModal = document.getElementById("settingsModal");
       document.getElementById("btnSettings").addEventListener("click", () => {
-        document.getElementById("geminiApiKeyInput").value = localStorage.getItem("gemini_api_key") || "";
+        document.getElementById("geminiApiKeyInput").value = safeStorageGet("gemini_api_key") || "";
         settingsModal.style.display = "flex";
       });
       document.getElementById("btnSaveApiKey").addEventListener("click", () => {
         const k = document.getElementById("geminiApiKeyInput").value.trim();
         if (!k) {
-          localStorage.removeItem("gemini_api_key");
+          try { localStorage.removeItem("gemini_api_key"); } catch(e){}
           alert("Clave eliminada.");
         } else {
-          localStorage.setItem("gemini_api_key", k);
+          safeStorageSet("gemini_api_key", k);
           alert("¡API Key de Gemini guardada correctamente!");
         }
         settingsModal.style.display = "none";
@@ -1593,3 +1654,172 @@ Responde ÚNICAMENTE un objeto JSON válido con la siguiente estructura (sin blo
         reader.onload = (e) => {
           currentAiBase64Image = e.target.result;
           document.getElementById("imagePreview").src = currentAiBase64Image;
+          document.getElementById("imagePreviewContainer").style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+
+      aiFileInput.onchange = (e) => handleImageFile(e.target.files[0]);
+
+      window.addEventListener("paste", (e) => {
+        if (aiModal.style.display !== "flex") return;
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (let item of items) {
+          if (item.type.startsWith("image/")) {
+            handleImageFile(item.getAsFile());
+            tabAiPhoto.click();
+            break;
+          }
+        }
+      });
+
+      document.getElementById("btnExecuteAi").addEventListener("click", executeGeminiExtraction);
+
+      document.querySelectorAll(".btn-close-modal").forEach(b => {
+        b.onclick = () => {
+          document.querySelectorAll(".modal-backdrop").forEach(m => m.style.display = "none");
+        };
+      });
+
+      const recipeModal = document.getElementById("recipeModal");
+      document.getElementById("btnNewRecipe").addEventListener("click", () => {
+        builderIngredients = [];
+        builderSteps = [
+          { action: "mezclar", timerMinutes: null, mergeWithPrevious: false, mergeAll: false, itemIndices: [] }
+        ];
+        document.getElementById("builderTitle").value = "";
+        document.getElementById("builderCategory").value = "";
+        document.getElementById("builderPrep").value = "";
+        renderBuilderIngredientsList();
+
+        document.getElementById("jsonInput").value = JSON.stringify(DEFAULT_RECIPES[0], null, 2);
+        recipeModal.style.display = "flex";
+      });
+
+      document.getElementById("btnAddIngredient").addEventListener("click", () => {
+        const name = document.getElementById("builderIngName").value.trim();
+        const amount = parseFloat(document.getElementById("builderIngAmount").value);
+        const unit = document.getElementById("builderIngUnit").value;
+        if (!name || isNaN(amount)) {
+          alert("Por favor ingresa la cantidad y el nombre del ingrediente.");
+          return;
+        }
+        builderIngredients.push({ name, amount, unit });
+        document.getElementById("builderIngName").value = "";
+        document.getElementById("builderIngAmount").value = "";
+        renderBuilderIngredientsList();
+      });
+
+      document.getElementById("btnAddStep").addEventListener("click", () => {
+        builderSteps.push({
+          action: "mezclar",
+          timerMinutes: null,
+          mergeWithPrevious: true,
+          mergeAll: false,
+          itemIndices: []
+        });
+        renderBuilderStepsUI();
+      });
+
+      const tabBuilder = document.getElementById("tabBuilder");
+      const tabJson = document.getElementById("tabJson");
+      const tabHelp = document.getElementById("tabHelp");
+      const contentBuilder = document.getElementById("tabContentBuilder");
+      const contentJson = document.getElementById("tabContentJson");
+      const contentHelp = document.getElementById("tabContentHelp");
+
+      tabBuilder.onclick = () => {
+        tabBuilder.classList.add("btn-active");
+        tabJson.classList.remove("btn-active");
+        tabHelp.classList.remove("btn-active");
+        contentBuilder.style.display = "block";
+        contentJson.style.display = "none";
+        contentHelp.style.display = "none";
+      };
+      tabJson.onclick = () => {
+        tabJson.classList.add("btn-active");
+        tabBuilder.classList.remove("btn-active");
+        tabHelp.classList.remove("btn-active");
+        contentJson.style.display = "block";
+        contentBuilder.style.display = "none";
+        contentHelp.style.display = "none";
+      };
+      tabHelp.onclick = () => {
+        tabHelp.classList.add("btn-active");
+        tabBuilder.classList.remove("btn-active");
+        tabJson.classList.remove("btn-active");
+        contentHelp.style.display = "block";
+        contentBuilder.style.display = "none";
+        contentJson.style.display = "none";
+      };
+
+      document.getElementById("btnSaveRecipe").addEventListener("click", () => {
+        if (contentBuilder.style.display !== "none") {
+          const title = document.getElementById("builderTitle").value.trim();
+          if (!title) {
+            alert("Por favor escribe el nombre de la receta.");
+            return;
+          }
+          if (builderIngredients.length === 0) {
+            alert("Debes agregar al menos un ingrediente.");
+            return;
+          }
+
+          const prepRaw = document.getElementById("builderPrep").value.trim();
+          const prepInstructions = prepRaw ? prepRaw.split(";").map(s => s.trim()).filter(Boolean) : [];
+
+          const steps = builderSteps.map(st => {
+            const stepItems = st.itemIndices.map(idx => builderIngredients[idx]).filter(Boolean);
+            return {
+              action: st.action || "mezclar",
+              timerMinutes: st.timerMinutes || null,
+              mergeWithPrevious: st.mergeWithPrevious || false,
+              mergeAll: st.mergeAll || false,
+              items: stepItems
+            };
+          });
+
+          const newRecipe = {
+            id: "receta-" + Date.now(),
+            title: title,
+            category: document.getElementById("builderCategory").value.trim() || "General",
+            prepInstructions: prepInstructions,
+            steps: steps
+          };
+
+          recipes.push(newRecipe);
+          saveToStorage();
+          currentRecipe = newRecipe;
+          updateRecipeSelector();
+          renderTable();
+          recipeModal.style.display = "none";
+        } else {
+          try {
+            const parsed = JSON.parse(document.getElementById("jsonInput").value);
+            if (!parsed.title || !parsed.steps || !Array.isArray(parsed.steps)) {
+              alert("El JSON debe tener al menos 'title' y 'steps'.");
+              return;
+            }
+            if (!parsed.id) parsed.id = "receta-" + Date.now();
+            recipes.push(parsed);
+            saveToStorage();
+            currentRecipe = parsed;
+            updateRecipeSelector();
+            renderTable();
+            recipeModal.style.display = "none";
+          } catch (e) {
+            alert("Error de sintaxis en el JSON: " + e.message);
+          }
+        }
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
