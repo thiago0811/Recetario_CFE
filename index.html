@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recetario - Diagramas de Flujo</title>
+  <title>Cooking for Engineers - Diagramas de Flujo</title>
   <style>
     :root {
       --primary: #15803d;
@@ -12,8 +12,9 @@
       --border-color: #166534;
       --bg: #f8fafc;
       --card-bg: #ffffff;
-      --text: #1e293b;
+      --text: #0f172a;
       --text-muted: #64748b;
+      --timer-bg: #0f172a;
     }
 
     * {
@@ -27,55 +28,59 @@
       background-color: var(--bg);
       color: var(--text);
       line-height: 1.5;
-      padding-bottom: 60px;
+      padding-bottom: 90px;
     }
 
     header {
       background: white;
       border-bottom: 1px solid #e2e8f0;
-      padding: 1rem 1.5rem;
+      padding: 0.85rem 1.25rem;
       position: sticky;
       top: 0;
-      z-index: 50;
+      z-index: 40;
     }
 
     .header-content {
-      max-width: 1200px;
+      max-width: 1250px;
       margin: 0 auto;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
     }
 
     .logo-area h1 {
       font-size: 1.35rem;
       color: var(--primary-dark);
+      font-weight: 800;
+      letter-spacing: -0.02em;
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
 
     .logo-area p {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
+      font-weight: 500;
     }
 
     .toolbar {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 0.4rem;
       align-items: center;
     }
 
     button, select, input {
       font-family: inherit;
-      font-size: 0.9rem;
-      padding: 0.45rem 0.85rem;
+      font-size: 0.85rem;
+      padding: 0.45rem 0.75rem;
       border-radius: 6px;
       border: 1px solid #cbd5e1;
       background: white;
+      color: var(--text);
       cursor: pointer;
       transition: all 0.15s ease;
     }
@@ -89,7 +94,7 @@
       background: var(--primary);
       color: white;
       border-color: var(--primary-dark);
-      font-weight: 500;
+      font-weight: 600;
     }
 
     button.btn-primary:hover {
@@ -104,16 +109,16 @@
     }
 
     main {
-      max-width: 1200px;
-      margin: 1.5rem auto;
+      max-width: 1250px;
+      margin: 1.25rem auto;
       padding: 0 1rem;
     }
 
     .recipe-meta-card {
       background: white;
       border-radius: 8px;
-      padding: 1.25rem;
-      margin-bottom: 1.5rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       border: 1px solid #e2e8f0;
       display: flex;
@@ -124,7 +129,7 @@
     }
 
     .recipe-title {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: 700;
       color: #0f172a;
     }
@@ -133,13 +138,13 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.65rem;
     }
 
     .control-item {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
       font-size: 0.85rem;
       color: var(--text-muted);
     }
@@ -154,8 +159,9 @@
     .scale-btn-group button {
       border: none;
       border-radius: 0;
-      padding: 0.35rem 0.65rem;
+      padding: 0.35rem 0.6rem;
       border-right: 1px solid #cbd5e1;
+      font-size: 0.8rem;
     }
 
     .scale-btn-group button:last-child {
@@ -165,7 +171,7 @@
     .table-viewport {
       background: white;
       border-radius: 8px;
-      padding: 1.5rem;
+      padding: 1.25rem;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       border: 1px solid #e2e8f0;
       overflow-x: auto;
@@ -199,9 +205,9 @@
       text-align: center;
       font-weight: 500;
       font-size: 1.05rem;
-      background: #fdfdfd;
+      background: #ffffff;
       color: #0f172a;
-      padding: 10px !important;
+      padding: 9px !important;
     }
 
     .ingredient-cell {
@@ -229,14 +235,9 @@
       font-weight: 600;
       color: #0f172a;
       background: #ffffff;
-      cursor: pointer;
-      min-width: 90px;
+      min-width: 100px;
       line-height: 1.35;
-      padding: 8px 14px !important;
-    }
-
-    .action-cell:hover {
-      background: #f0fdf4;
+      padding: 8px 12px !important;
     }
 
     .action-cell.completed {
@@ -245,15 +246,80 @@
       text-decoration: line-through;
     }
 
+    .timer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-top: 0.4rem;
+      padding: 0.25rem 0.5rem;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .timer-badge:hover {
+      background: #dbeafe;
+      transform: scale(1.03);
+    }
+
     .empty-spacer-cell {
       background: #ffffff;
       border: 1.5px solid var(--border-color);
     }
 
+    #activeTimerBar {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--timer-bg);
+      color: white;
+      padding: 0.75rem 1.25rem;
+      border-radius: 9999px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+      display: none;
+      align-items: center;
+      gap: 1rem;
+      z-index: 80;
+      animation: slideUp 0.2s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translate(-50%, 20px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+
+    .timer-display {
+      font-family: monospace;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #38bdf8;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    #activeTimerBar button {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      padding: 0.35rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+    }
+
+    #activeTimerBar button:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(15, 23, 42, 0.65);
       display: none;
       align-items: center;
       justify-content: center;
@@ -265,23 +331,92 @@
       background: white;
       border-radius: 12px;
       width: 100%;
-      max-width: 700px;
-      max-height: 90vh;
+      max-width: 800px;
+      max-height: 92vh;
       overflow-y: auto;
-      padding: 1.75rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #e2e8f0;
     }
 
     .modal-header h2 {
       font-size: 1.25rem;
       color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    .tab-nav {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 0.5rem;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+    }
+
+    .tab-btn.btn-active {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #334155;
+      margin: 1rem 0 0.5rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.45rem 0.65rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+
+    .item-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.6rem;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      margin: 0.2rem;
+    }
+
+    .step-builder-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.85rem;
+      margin-bottom: 0.75rem;
     }
 
     textarea.code-editor {
@@ -301,10 +436,12 @@
       justify-content: flex-end;
       gap: 0.5rem;
       margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e2e8f0;
     }
 
     @media print {
-      header, .controls-group, .toolbar, .recipe-meta-card button {
+      header, .controls-group, .toolbar, .recipe-meta-card button, #activeTimerBar {
         display: none !important;
       }
       body {
@@ -333,16 +470,19 @@
   <header>
     <div class="header-content">
       <div class="logo-area">
-        <h1>🍳 Recetas en Diagrama</h1>
-        <p>Formato tabular ("Cooking for Engineers")</p>
+        <h1>Cooking for Engineers</h1>
+        <p>Diagramas de flujo de recetas • 100% Métrico</p>
       </div>
 
       <div class="toolbar">
         <select id="recipeSelector" aria-label="Seleccionar receta"></select>
-        <button id="btnNewRecipe" class="btn-primary">+ Cargar Receta</button>
-        <button id="btnWakeLock" title="Evita que se apague la pantalla del celular">💡 Pantalla Activa</button>
-        <button id="btnPrint" title="Imprimir o guardar como PDF">🖨️ Imprimir</button>
-        <button id="btnExportAll" title="Descargar copia de seguridad en JSON">💾 Respaldar</button>
+        <button id="btnNewRecipe" class="btn-primary">+ Nueva Receta</button>
+        <button id="btnConverter" title="Abrir conversor de unidades a gramos/mL">⚖️ Conversor</button>
+        <button id="btnWakeLock" title="Evita que se apague la pantalla">💡 Pantalla Activa</button>
+        <button id="btnPrint" title="Imprimir o exportar PDF">🖨️ Imprimir</button>
+        <button id="btnExportAll" title="Descargar copia local JSON">💾 Respaldar</button>
+        <button id="btnImportAll" title="Restaurar copia local JSON">📥 Restaurar</button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none;">
       </div>
     </div>
   </header>
@@ -365,17 +505,8 @@
           </div>
         </div>
 
-        <div class="control-item">
-          <span>Unidades:</span>
-          <select id="unitSelector">
-            <option value="both">Ambas (Métrico e Imperial)</option>
-            <option value="metric">Solo Métrico (g, mL)</option>
-            <option value="imperial">Solo Imperial (oz, cups)</option>
-          </select>
-        </div>
-
-        <button id="btnResetCompleted" title="Restablecer ingredientes marcados">↺ Desmarcar</button>
-        <button id="btnDeleteCurrent" style="color: #dc2626;" title="Eliminar receta actual">🗑️</button>
+        <button id="btnResetCompleted" title="Desmarcar ingredientes tachados">↺ Desmarcar Todo</button>
+        <button id="btnDeleteCurrent" style="color: #dc2626;" title="Eliminar receta actual">🗑️ Eliminar</button>
       </div>
     </div>
 
@@ -386,39 +517,155 @@
     </div>
   </main>
 
+  <div id="activeTimerBar">
+    <span style="font-size: 0.85rem; font-weight: 600;">⏱️ Temporizador:</span>
+    <span id="timerCountdown" class="timer-display">00:00</span>
+    <button id="btnPauseResumeTimer">Pausa</button>
+    <button id="btnResetTimer">Reiniciar</button>
+    <button id="btnCloseTimer" style="background: none; border:none; font-size:1.1rem;">✕</button>
+  </div>
+
+  <div id="converterModal" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 550px;">
+      <div class="modal-header">
+        <h2>Conversor de Unidades a Métrico</h2>
+        <button class="btn-close-modal" style="border:none; font-size:1.25rem;">✕</button>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Convierte tazas, cucharadas, onzas, libras o galones a su equivalente exacto en <strong>gramos (g)</strong> o <strong>mililitros (mL)</strong> considerando la densidad del ingrediente.
+      </p>
+
+      <div class="input-row">
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; font-weight: 600;">Cantidad:</label>
+          <input type="number" id="convAmount" class="form-input" value="1" step="any">
+        </div>
+        <div style="flex: 1.5;">
+          <label style="font-size: 0.75rem; font-weight: 600;">Unidad de origen:</label>
+          <select id="convUnit" class="form-input">
+            <option value="cup">Taza (cup)</option>
+            <option value="tbsp">Cucharada (tbsp / cda)</option>
+            <option value="tsp">Cucharadita (tsp / cdita)</option>
+            <option value="oz">Onza masa (oz)</option>
+            <option value="floz">Onza líquida (fl oz)</option>
+            <option value="lb">Libra (lb)</option>
+            <option value="gal">Galón (gal)</option>
+            <option value="stick">Barra de manteca (1 stick)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top: 0.75rem;">
+        <label style="font-size: 0.75rem; font-weight: 600;">Tipo de ingrediente (cálculo por densidad):</label>
+        <select id="convIngredient" class="form-input">
+          <option value="liquids">Líquidos (agua, leche, café, vinagre)</option>
+          <option value="flour">Harina común / 0000 / todo uso (1 taza = 125 g)</option>
+          <option value="sugar">Azúcar blanca / común (1 taza = 200 g)</option>
+          <option value="brown_sugar">Azúcar rubia / mascabo compacta (1 taza = 220 g)</option>
+          <option value="powdered_sugar">Azúcar impalpable / glas (1 taza = 120 g)</option>
+          <option value="butter">Manteca / Mantequilla (1 taza = 227 g)</option>
+          <option value="cocoa">Cacao amargo en polvo (1 taza = 100 g)</option>
+          <option value="oil">Aceite vegetal / oliva (1 taza = 220 g / 240 mL)</option>
+          <option value="honey">Miel / Dulce de leche (1 taza = 340 g)</option>
+          <option value="oats">Avena en hojuelas (1 taza = 90 g)</option>
+          <option value="chips">Chispas de chocolate (1 taza = 175 g)</option>
+        </select>
+      </div>
+
+      <div style="margin-top: 1.25rem; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px; padding: 1rem; text-align: center;">
+        <div style="font-size: 0.8rem; color: #166534; font-weight: 600;">EQUIVALENTE MÉTRICO:</div>
+        <div id="convResult" style="font-size: 1.6rem; font-weight: 800; color: #15803d; margin-top: 0.25rem;">0 g</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-close-modal btn-primary">Listo</button>
+      </div>
+    </div>
+  </div>
+
   <div id="recipeModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
         <h2 id="modalTitle">Cargar Nueva Receta</h2>
-        <button id="btnCloseModal" style="border:none; font-size:1.25rem;">✕</button>
+        <button class="btn-close-modal" style="border:none; font-size:1.25rem;">✕</button>
       </div>
 
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-        <button id="tabJson" class="btn-active" style="flex:1;">Editor JSON</button>
-        <button id="tabHelp" style="flex:1;">Guía del Formato</button>
+      <div class="tab-nav">
+        <button id="tabBuilder" class="tab-btn btn-active">🛠️ Creador Interactivo</button>
+        <button id="tabJson" class="tab-btn">💻 Editor JSON (Directo)</button>
+        <button id="tabHelp" class="tab-btn">❓ Guía</button>
       </div>
 
-      <div id="tabContentJson">
+      <div id="tabContentBuilder">
+        <div class="section-title">1. Información General</div>
+        <div class="input-row">
+          <input type="text" id="builderTitle" class="form-input" placeholder="Nombre de la receta (ej. Brownies de Chocolate)">
+          <input type="text" id="builderCategory" class="form-input" style="max-width: 180px;" placeholder="Categoría (ej. Pastelería)">
+        </div>
+        <div style="margin-top: 0.4rem;">
+          <input type="text" id="builderPrep" class="form-input" placeholder="Instrucciones previas (separadas por ';', ej. Precalentar horno a 170°C; Enmantecar molde)">
+        </div>
+
+        <div class="section-title">
+          <span>2. Cargar Ingredientes (Solo Métrico)</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Usa el conversor si tienes medidas en tazas u oz</span>
+        </div>
+
+        <div class="input-row">
+          <input type="number" id="builderIngAmount" class="form-input" style="max-width: 90px;" placeholder="Cant." step="any">
+          <select id="builderIngUnit" class="form-input" style="max-width: 90px;">
+            <option value="g">g</option>
+            <option value="mL">mL</option>
+            <option value="kg">kg</option>
+            <option value="L">L</option>
+            <option value="un">un</option>
+            <option value="cdita">cdita</option>
+            <option value="cda">cda</option>
+            <option value="pizca">pizca</option>
+          </select>
+          <input type="text" id="builderIngName" class="form-input" placeholder="Nombre del ingrediente (ej. harina 0000)">
+          <button id="btnAddIngredient" class="btn-primary" type="button" style="white-space:nowrap;">+ Agregar</button>
+        </div>
+
+        <div id="builderIngredientsList" style="min-height: 45px; background: white; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 0.4rem; margin-bottom: 1rem;">
+          <span id="noIngMsg" style="font-size: 0.8rem; color: #94a3b8; padding: 0.3rem;">Aún no agregaste ingredientes.</span>
+        </div>
+
+        <div class="section-title">
+          <span>3. Pasos y Acciones de Flujo (Cooking for Engineers)</span>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+          Define las columnas del diagrama. En cada acción, selecciona qué ingredientes ingresan o si se combinan con la preparación anterior.
+        </p>
+
+        <div id="builderStepsContainer"></div>
+
+        <button id="btnAddStep" type="button" style="width: 100%; border: 1px dashed var(--primary); color: var(--primary); font-weight: 600; padding: 0.6rem; border-radius: 6px;">
+          + Agregar Paso de Acción
+        </button>
+      </div>
+
+      <div id="tabContentJson" style="display: none;">
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
-          Pega la estructura de la receta en formato JSON. Incluye las acciones y sus ingredientes correspondientes.
+          Pega o edita directamente la receta estructurada en JSON con todas las unidades en métrico:
         </p>
         <textarea id="jsonInput" class="code-editor" spellcheck="false"></textarea>
       </div>
 
       <div id="tabContentHelp" style="display: none; font-size: 0.9rem; line-height: 1.6; color: #334155;">
-        <p><strong>Estructura del formato:</strong></p>
+        <p><strong>¿Cómo funciona el diagrama tabular?</strong></p>
         <ul style="padding-left: 1.25rem; margin: 0.5rem 0 1rem 0;">
-          <li><code>prepInstructions</code>: Pasos previos que van en el encabezado general (ej. precalentar horno).</li>
-          <li><code>steps</code>: Cada bloque es una columna de acción (ej. <em>melt</em>, <em>mix</em>, <em>fold in</em>, <em>bake</em>).</li>
-          <li><code>items</code>: Los ingredientes que ingresan en esa acción específica.</li>
-          <li><code>mergeWithPrevious: true</code>: Indica que esta acción toma los ingredientes nuevos y los une a lo anterior.</li>
-          <li><code>mergeAll: true</code>: Usado en pasos finales como hornear para unificar todo el diagrama.</li>
+          <li><strong>Encabezado:</strong> Acciones iniciales como precalentar el horno o preparar fuentes.</li>
+          <li><strong>Ingredientes:</strong> Cada uno ocupa una fila a la izquierda en gramos o mililitros.</li>
+          <li><strong>Acciones intermedias:</strong> Acciones como <em>derretir</em>, <em>batir</em> o <em>mezclar</em>.</li>
+          <li><strong>Confluencia:</strong> Cuando un paso se combina con lo anterior, la columna agrupa las filas correspondientes.</li>
+          <li><strong>Paso final (Unificar todo):</strong> Se usa en el horneado o cocción final para abarcar toda la tabla.</li>
         </ul>
       </div>
 
       <div class="modal-actions">
-        <button id="btnCancelModal">Cancelar</button>
-        <button id="btnSaveRecipe" class="btn-primary">Guardar Receta</button>
+        <button class="btn-close-modal">Cancelar</button>
+        <button id="btnSaveRecipe" class="btn-primary">Guardar y Renderizar</button>
       </div>
     </div>
   </div>
@@ -427,47 +674,48 @@
     const DEFAULT_RECIPES = [
       {
         id: "espresso-cocoa-brownies",
-        title: "Espresso Cocoa Brownies",
+        title: "Brownies de Cacao y Espresso",
         category: "Pastelería",
         prepInstructions: [
-          "Butter and flour an 8x8-in pan",
-          "Preheat oven to 350°F (170°C)"
+          "Enmantecar y enharinar un molde cuadrado de 20x20 cm",
+          "Precalentar horno a 170°C"
         ],
         steps: [
           {
-            action: "melt",
+            action: "derretir",
             items: [
-              { name: "unsalted butter", metric: "115 g", imperial: "4 oz", amountMetric: 115, unitMetric: "g", amountImp: 4, unitImp: "oz" }
+              { name: "manteca sin sal", amount: 115, unit: "g" }
             ]
           },
           {
-            action: "mix",
+            action: "mezclar",
             mergeWithPrevious: true,
             items: [
-              { name: "sugar", metric: "200 g", imperial: "1 cup", amountMetric: 200, unitMetric: "g", amountImp: 1, unitImp: "cup" },
-              { name: "vanilla extract", metric: "2.5 mL", imperial: "1/4 tsp.", amountMetric: 2.5, unitMetric: "mL", amountImp: 0.25, unitImp: "tsp." },
-              { name: "fresh brewed espresso or very strong coffee", metric: "60 mL", imperial: "1 shot (4 Tbs)", amountMetric: 60, unitMetric: "mL", amountImp: 4, unitImp: "Tbs" }
+              { name: "azúcar", amount: 200, unit: "g" },
+              { name: "extracto de vainilla", amount: 2.5, unit: "mL" },
+              { name: "café espresso recién hecho (o fuerte)", amount: 60, unit: "mL" }
             ]
           },
           {
-            action: "mix",
+            action: "mezclar",
             mergeWithPrevious: true,
             items: [
-              { name: "eggs", metric: "100 g", imperial: "2 large", amountMetric: 100, unitMetric: "g", amountImp: 2, unitImp: "large" }
+              { name: "huevos (2 grandes)", amount: 100, unit: "g" }
             ]
           },
           {
-            action: "fold in",
+            action: "incorporar\\n(con espátula)",
             mergeWithPrevious: true,
             items: [
-              { name: "all-purpose flour", metric: "80 g", imperial: "1/2 cup", amountMetric: 80, unitMetric: "g", amountImp: 0.5, unitImp: "cup" },
-              { name: "Hershey's cocoa powder", metric: "80 g", imperial: "1/3 cup", amountMetric: 80, unitMetric: "g", amountImp: 0.33, unitImp: "cup" },
-              { name: "baking soda", metric: "1.3 g", imperial: "1/4 tsp.", amountMetric: 1.3, unitMetric: "g", amountImp: 0.25, unitImp: "tsp." },
-              { name: "table salt", metric: "1.5 g", imperial: "1/4 tsp.", amountMetric: 1.5, unitMetric: "g", amountImp: 0.25, unitImp: "tsp." }
+              { name: "harina común 0000", amount: 80, unit: "g" },
+              { name: "cacao amargo en polvo", amount: 80, unit: "g" },
+              { name: "bicarbonato de sodio", amount: 1.3, unit: "g" },
+              { name: "sal fina", amount: 1.5, unit: "g" }
             ]
           },
           {
-            action: "bake\\n350°F\\n(170°C)\\n30 to 40\\nmin",
+            action: "hornear a 170°C",
+            timerMinutes: 35,
             mergeAll: true,
             items: []
           }
@@ -478,30 +726,32 @@
         title: "Salsa Teriyaki Casera",
         category: "Salsas",
         prepInstructions: [
-          "Tener listos los ingredientes medidos",
-          "Preparar olla pequeña a fuego medio-bajo"
+          "Tener todos los ingredientes pesados listos",
+          "Olla pequeña a fuego medio-bajo"
         ],
         steps: [
           {
-            action: "diluir",
+            action: "diluir en frío",
             items: [
-              { name: "almidón de maíz (maicena)", metric: "15 g", imperial: "1 cda", amountMetric: 15, unitMetric: "g", amountImp: 1, unitImp: "cda" },
-              { name: "agua fría", metric: "30 mL", imperial: "2 cdas", amountMetric: 30, unitMetric: "mL", amountImp: 2, unitImp: "cdas" }
+              { name: "almidón de maíz (maicena)", amount: 15, unit: "g" },
+              { name: "agua fría", amount: 30, unit: "mL" }
             ]
           },
           {
-            action: "hervir y disolver\\n(2 min)",
+            action: "hervir y disolver",
+            timerMinutes: 2,
             mergeWithPrevious: false,
             items: [
-              { name: "salsa de soja", metric: "120 mL", imperial: "1/2 taza", amountMetric: 120, unitMetric: "mL", amountImp: 0.5, unitImp: "taza" },
-              { name: "azúcar rubia o mascabo", metric: "60 g", imperial: "1/4 taza", amountMetric: 60, unitMetric: "g", amountImp: 0.25, unitImp: "taza" },
-              { name: "mirin o vino blanco dulce", metric: "60 mL", imperial: "1/4 taza", amountMetric: 60, unitMetric: "mL", amountImp: 0.25, unitImp: "taza" },
-              { name: "jengibre fresco rallado", metric: "5 g", imperial: "1 cdita", amountMetric: 5, unitMetric: "g", amountImp: 1, unitImp: "cdita" },
-              { name: "ajo rallado", metric: "1 diente", imperial: "1 diente", amountMetric: 1, unitMetric: "diente", amountImp: 1, unitImp: "diente" }
+              { name: "salsa de soja", amount: 120, unit: "mL" },
+              { name: "azúcar rubia o mascabo", amount: 60, unit: "g" },
+              { name: "mirin o vino dulce", amount: 60, unit: "mL" },
+              { name: "jengibre fresco rallado", amount: 5, unit: "g" },
+              { name: "ajo rallado (1 diente)", amount: 4, unit: "g" }
             ]
           },
           {
-            action: "espesar a fuego suave\\n(revolver 3 min)",
+            action: "espesar a fuego suave\\n(revolver continuo)",
+            timerMinutes: 3,
             mergeAll: true,
             items: []
           }
@@ -512,12 +762,16 @@
     let recipes = [];
     let currentRecipe = null;
     let currentScale = 1;
-    let currentUnitMode = "both";
     let completedItems = new Set();
     let wakeLock = null;
 
+    let timerInterval = null;
+    let timerRemainingSeconds = 0;
+    let timerInitialSeconds = 0;
+    let timerIsPaused = false;
+
     function initStorage() {
-      const stored = localStorage.getItem("cfe_recipes");
+      const stored = localStorage.getItem("cfe_recipes_v2");
       if (stored) {
         try {
           recipes = JSON.parse(stored);
@@ -531,37 +785,66 @@
     }
 
     function saveToStorage() {
-      localStorage.setItem("cfe_recipes", JSON.stringify(recipes));
+      localStorage.setItem("cfe_recipes_v2", JSON.stringify(recipes));
     }
 
-    function formatIngredient(item, scale, unitMode) {
-      const formatNum = (val) => {
-        if (!val) return "";
-        const scaled = val * scale;
-        return Number.isInteger(scaled) ? scaled : scaled.toFixed(1).replace(/\\.0$/, "");
-      };
+    function formatIngredient(item, scale) {
+      if (!item.amount) return item.name;
+      const scaled = item.amount * scale;
+      const formattedNum = Number.isInteger(scaled) ? scaled : scaled.toFixed(1).replace(/\\.0$/, "");
+      return `${formattedNum} ${item.unit || "g"} ${item.name}`.trim();
+    }
 
-      if (unitMode === "metric") {
-        if (item.amountMetric) {
-          return `${formatNum(item.amountMetric)} ${item.unitMetric} ${item.name}`;
+    function playTimerBeep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        for (let i = 0; i < 3; i++) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(659.25, ctx.currentTime + i * 0.25);
+          osc.frequency.setValueAtTime(880, ctx.currentTime + i * 0.25 + 0.1);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.25);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.25 + 0.22);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.25);
+          osc.stop(ctx.currentTime + i * 0.25 + 0.22);
         }
-        return `${item.metric || ""} ${item.name}`;
-      } else if (unitMode === "imperial") {
-        if (item.amountImp) {
-          return `${formatNum(item.amountImp)} ${item.unitImp} ${item.name}`;
-        }
-        return `${item.imperial || ""} ${item.name}`;
-      } else {
-        let amountText = "";
-        if (item.amountImp && item.amountMetric) {
-          amountText = `${formatNum(item.amountImp)} ${item.unitImp} (${formatNum(item.amountMetric)} ${item.unitMetric})`;
-        } else if (item.imperial && item.metric) {
-          amountText = `${item.imperial} (${item.metric})`;
-        } else {
-          amountText = item.metric || item.imperial || "";
-        }
-        return `${amountText} ${item.name}`.trim();
+      } catch (e) {
+        console.log("Audio no soportado:", e);
       }
+    }
+
+    function startTimer(minutes) {
+      clearInterval(timerInterval);
+      timerInitialSeconds = Math.round(minutes * 60);
+      timerRemainingSeconds = timerInitialSeconds;
+      timerIsPaused = false;
+
+      const bar = document.getElementById("activeTimerBar");
+      bar.style.display = "flex";
+      document.getElementById("btnPauseResumeTimer").innerText = "Pausar";
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+        if (!timerIsPaused) {
+          timerRemainingSeconds--;
+          updateTimerDisplay();
+          if (timerRemainingSeconds <= 0) {
+            clearInterval(timerInterval);
+            playTimerBeep();
+            alert("¡Tiempo cumplido en el temporizador de cocina!");
+          }
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(timerRemainingSeconds / 60);
+      const secs = timerRemainingSeconds % 60;
+      document.getElementById("timerCountdown").innerText = 
+        `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
 
     function renderTable() {
@@ -589,8 +872,8 @@
 
       const totalRows = flatIngredients.length;
       const numColumns = currentRecipe.steps.length;
-
       const totalColspan = numColumns + 1;
+
       if (currentRecipe.prepInstructions && currentRecipe.prepInstructions.length > 0) {
         currentRecipe.prepInstructions.forEach(instr => {
           const tr = document.createElement("tr");
@@ -612,13 +895,11 @@
         if (step.mergeAll) {
           grid[0][colIndex] = {
             type: "action",
-            action: step.action,
+            step: step,
             rowspan: totalRows,
             id: `action-${currentRecipe.id}-${colIndex}`
           };
-          for (let r = 1; r < totalRows; r++) {
-            grid[r][colIndex] = { type: "covered" };
-          }
+          for (let r = 1; r < totalRows; r++) grid[r][colIndex] = { type: "covered" };
         } else if (step.mergeWithPrevious) {
           accumulatedRows += stage.count;
           const startRow = 0;
@@ -626,25 +907,21 @@
 
           grid[startRow][colIndex] = {
             type: "action",
-            action: step.action,
+            step: step,
             rowspan: rowspan,
             id: `action-${currentRecipe.id}-${colIndex}`
           };
-          for (let r = 1; r < rowspan; r++) {
-            grid[r][colIndex] = { type: "covered" };
-          }
+          for (let r = 1; r < rowspan; r++) grid[r][colIndex] = { type: "covered" };
         } else {
           accumulatedRows = stage.count;
           if (stage.count > 0) {
             grid[stage.startRow][colIndex] = {
               type: "action",
-              action: step.action,
+              step: step,
               rowspan: stage.count,
               id: `action-${currentRecipe.id}-${colIndex}`
             };
-            for (let r = stage.startRow + 1; r <= stage.endRow; r++) {
-              grid[r][colIndex] = { type: "covered" };
-            }
+            for (let r = stage.startRow + 1; r <= stage.endRow; r++) grid[r][colIndex] = { type: "covered" };
           }
         }
       });
@@ -658,9 +935,7 @@
               emptySpan++;
             }
             grid[r][c] = { type: "spacer", rowspan: emptySpan };
-            for (let k = 1; k < emptySpan; k++) {
-              grid[r + k][c] = { type: "covered" };
-            }
+            for (let k = 1; k < emptySpan; k++) grid[r + k][c] = { type: "covered" };
             r += emptySpan;
           } else {
             r++;
@@ -674,44 +949,40 @@
         const tdIng = document.createElement("td");
         tdIng.className = "ingredient-cell";
         const ingId = `ing-${currentRecipe.id}-${rowIndex}`;
-        if (completedItems.has(ingId)) {
-          tdIng.classList.add("completed");
-        }
-        tdIng.innerText = formatIngredient(ing, currentScale, currentUnitMode);
+        if (completedItems.has(ingId)) tdIng.classList.add("completed");
+        tdIng.innerText = formatIngredient(ing, currentScale);
         tdIng.onclick = () => {
           tdIng.classList.toggle("completed");
-          if (tdIng.classList.contains("completed")) {
-            completedItems.add(ingId);
-          } else {
-            completedItems.delete(ingId);
-          }
+          if (tdIng.classList.contains("completed")) completedItems.add(ingId);
+          else completedItems.delete(ingId);
         };
         tr.appendChild(tdIng);
 
         for (let colIndex = 0; colIndex < numColumns; colIndex++) {
           const cell = grid[rowIndex][colIndex];
-          if (!cell || cell.type === "covered") {
-            continue;
-          }
+          if (!cell || cell.type === "covered") continue;
 
           const tdAction = document.createElement("td");
-          if (cell.rowspan > 1) {
-            tdAction.rowSpan = cell.rowspan;
-          }
+          if (cell.rowspan > 1) tdAction.rowSpan = cell.rowspan;
 
           if (cell.type === "action") {
             tdAction.className = "action-cell";
-            tdAction.innerHTML = cell.action.replace(/\\n/g, "<br>");
-            if (completedItems.has(cell.id)) {
-              tdAction.classList.add("completed");
+            const step = cell.step;
+            
+            let contentHtml = `<div>${step.action.replace(/\\\\n/g, "<br>").replace(/\\n/g, "<br>")}</div>`;
+
+            if (step.timerMinutes) {
+              contentHtml += `<button class="timer-badge" onclick="event.stopPropagation(); startTimer(${step.timerMinutes})">⏱️ ${step.timerMinutes} min</button>`;
             }
-            tdAction.onclick = () => {
+
+            tdAction.innerHTML = contentHtml;
+            if (completedItems.has(cell.id)) tdAction.classList.add("completed");
+
+            tdAction.onclick = (e) => {
+              if (e.target.tagName === 'BUTTON') return;
               tdAction.classList.toggle("completed");
-              if (tdAction.classList.contains("completed")) {
-                completedItems.add(cell.id);
-              } else {
-                completedItems.delete(cell.id);
-              }
+              if (tdAction.classList.contains("completed")) completedItems.add(cell.id);
+              else completedItems.delete(cell.id);
             };
           } else if (cell.type === "spacer") {
             tdAction.className = "empty-spacer-cell";
@@ -733,11 +1004,144 @@
         opt.innerText = r.title;
         sel.appendChild(opt);
       });
-
-      if (currentRecipe) {
-        sel.value = currentRecipe.id;
-      }
+      if (currentRecipe) sel.value = currentRecipe.id;
     }
+
+    function calculateConversion() {
+      const amount = parseFloat(document.getElementById("convAmount").value) || 0;
+      const unit = document.getElementById("convUnit").value;
+      const ingredient = document.getElementById("convIngredient").value;
+
+      const cupDensities = {
+        liquids: 240,
+        flour: 125,
+        sugar: 200,
+        brown_sugar: 220,
+        powdered_sugar: 120,
+        butter: 227,
+        cocoa: 100,
+        oil: 218,
+        honey: 340,
+        oats: 90,
+        chips: 175
+      };
+
+      let resultGrams = 0;
+      let unitLabel = "g";
+
+      if (unit === "cup") {
+        resultGrams = amount * (cupDensities[ingredient] || 240);
+      } else if (unit === "tbsp") {
+        resultGrams = (amount / 16) * (cupDensities[ingredient] || 240);
+      } else if (unit === "tsp") {
+        resultGrams = (amount / 48) * (cupDensities[ingredient] || 240);
+      } else if (unit === "oz") {
+        resultGrams = amount * 28.3495;
+      } else if (unit === "lb") {
+        resultGrams = amount * 453.592;
+      } else if (unit === "stick") {
+        resultGrams = amount * 113.4;
+      } else if (unit === "floz") {
+        resultGrams = amount * 29.5735;
+        unitLabel = "mL";
+      } else if (unit === "gal") {
+        resultGrams = amount * 3785.41;
+        unitLabel = "mL";
+      }
+
+      const formatted = resultGrams >= 10 ? Math.round(resultGrams) : resultGrams.toFixed(1);
+      document.getElementById("convResult").innerText = `${formatted} ${unitLabel}`;
+    }
+
+    let builderIngredients = [];
+    let builderSteps = [];
+
+    function renderBuilderIngredientsList() {
+      const list = document.getElementById("builderIngredientsList");
+      list.innerHTML = "";
+      if (builderIngredients.length === 0) {
+        list.innerHTML = `<span style="font-size: 0.8rem; color: #94a3b8; padding: 0.3rem;">Aún no agregaste ingredientes.</span>`;
+        return;
+      }
+
+      builderIngredients.forEach((ing, idx) => {
+        const chip = document.createElement("span");
+        chip.className = "item-chip";
+        chip.innerHTML = `<strong>${ing.amount} ${ing.unit}</strong> ${ing.name} <button type="button" style="border:none; background:none; cursor:pointer; color:#ef4444;" onclick="removeBuilderIngredient(${idx})">✕</button>`;
+        list.appendChild(chip);
+      });
+      renderBuilderStepsUI();
+    }
+
+    window.removeBuilderIngredient = function(index) {
+      builderIngredients.splice(index, 1);
+      renderBuilderIngredientsList();
+    };
+
+    function renderBuilderStepsUI() {
+      const container = document.getElementById("builderStepsContainer");
+      container.innerHTML = "";
+
+      builderSteps.forEach((step, sIdx) => {
+        const card = document.createElement("div");
+        card.className = "step-builder-card";
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <strong style="font-size:0.85rem; color:var(--primary-dark);">Paso ${sIdx + 1}</strong>
+            <button type="button" style="border:none; color:#ef4444; font-size:0.8rem;" onclick="removeBuilderStep(${sIdx})">Eliminar Paso</button>
+          </div>
+          <div class="input-row">
+            <input type="text" class="form-input step-action-input" data-idx="${sIdx}" value="${step.action || ''}" placeholder="Acción (ej. mezclar, derretir, hornear)">
+            <input type="number" class="form-input step-timer-input" style="max-width:110px;" data-idx="${sIdx}" value="${step.timerMinutes || ''}" placeholder="Minutos ⏱️">
+          </div>
+          <div style="display:flex; gap:1rem; margin-top:0.4rem; font-size:0.8rem;">
+            <label><input type="checkbox" class="step-merge-prev" data-idx="${sIdx}" ${step.mergeWithPrevious ? 'checked' : ''}> Unir con paso anterior</label>
+            <label><input type="checkbox" class="step-merge-all" data-idx="${sIdx}" ${step.mergeAll ? 'checked' : ''}> Unificar todo (Paso final)</label>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <div style="font-size:0.75rem; font-weight:600; color:#475569; margin-bottom:0.25rem;">Ingredientes que ingresan en este paso:</div>
+            <div id="stepIngs-${sIdx}">
+              ${builderIngredients.map((ing, iIdx) => `
+                <label class="item-chip" style="cursor:pointer;">
+                  <input type="checkbox" class="step-ing-check" data-sidx="${sIdx}" data-iidx="${iIdx}" ${step.itemIndices.includes(iIdx) ? 'checked' : ''}>
+                  ${ing.name}
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      container.querySelectorAll(".step-action-input").forEach(inp => {
+        inp.oninput = (e) => { builderSteps[e.target.dataset.idx].action = e.target.value; };
+      });
+      container.querySelectorAll(".step-timer-input").forEach(inp => {
+        inp.oninput = (e) => { builderSteps[e.target.dataset.idx].timerMinutes = parseFloat(e.target.value) || null; };
+      });
+      container.querySelectorAll(".step-merge-prev").forEach(inp => {
+        inp.onchange = (e) => { builderSteps[e.target.dataset.idx].mergeWithPrevious = e.target.checked; };
+      });
+      container.querySelectorAll(".step-merge-all").forEach(inp => {
+        inp.onchange = (e) => { builderSteps[e.target.dataset.idx].mergeAll = e.target.checked; };
+      });
+      container.querySelectorAll(".step-ing-check").forEach(inp => {
+        inp.onchange = (e) => {
+          const sIdx = parseInt(e.target.dataset.sidx);
+          const iIdx = parseInt(e.target.dataset.iidx);
+          if (e.target.checked) {
+            if (!builderSteps[sIdx].itemIndices.includes(iIdx)) builderSteps[sIdx].itemIndices.push(iIdx);
+          } else {
+            builderSteps[sIdx].itemIndices = builderSteps[sIdx].itemIndices.filter(x => x !== iIdx);
+          }
+        };
+      });
+    }
+
+    window.removeBuilderStep = function(index) {
+      builderSteps.splice(index, 1);
+      renderBuilderStepsUI();
+    };
 
     document.addEventListener("DOMContentLoaded", () => {
       initStorage();
@@ -763,19 +1167,12 @@
         });
       });
 
-      document.getElementById("unitSelector").addEventListener("change", (e) => {
-        currentUnitMode = e.target.value;
-        renderTable();
-      });
-
       document.getElementById("btnResetCompleted").addEventListener("click", () => {
         completedItems.clear();
         renderTable();
       });
 
-      document.getElementById("btnPrint").addEventListener("click", () => {
-        window.print();
-      });
+      document.getElementById("btnPrint").addEventListener("click", () => window.print());
 
       const btnWakeLock = document.getElementById("btnWakeLock");
       btnWakeLock.addEventListener("click", async () => {
@@ -799,8 +1196,6 @@
             btnWakeLock.classList.remove("btn-active");
             btnWakeLock.innerText = "💡 Pantalla Activa";
           }
-        } else {
-          alert("Tu navegador no soporta mantener la pantalla activa.");
         }
       });
 
@@ -809,17 +1204,43 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "mis_recetas_diagrama.json";
+        a.download = `recetas_cooking_for_engineers_${new Date().toISOString().slice(0,10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
       });
 
+      const importInput = document.getElementById("importFileInput");
+      document.getElementById("btnImportAll").addEventListener("click", () => importInput.click());
+      importInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const imported = JSON.parse(ev.target.result);
+            if (Array.isArray(imported) && imported.length > 0) {
+              recipes = imported;
+              saveToStorage();
+              currentRecipe = recipes[0];
+              updateRecipeSelector();
+              renderTable();
+              alert("¡Recetas importadas con éxito!");
+            } else {
+              alert("El archivo no contiene una lista válida de recetas.");
+            }
+          } catch (err) {
+            alert("Error al leer el archivo JSON: " + err.message);
+          }
+        };
+        reader.readAsText(file);
+      });
+
       document.getElementById("btnDeleteCurrent").addEventListener("click", () => {
         if (recipes.length <= 1) {
-          alert("No puedes eliminar la única receta.");
+          alert("Debe quedar al menos una receta en el sistema.");
           return;
         }
-        if (confirm(`¿Eliminar "${currentRecipe.title}"?`)) {
+        if (confirm(`¿Eliminar definitivamente "${currentRecipe.title}"?`)) {
           recipes = recipes.filter(r => r.id !== currentRecipe.id);
           saveToStorage();
           currentRecipe = recipes[0];
@@ -828,87 +1249,165 @@
         }
       });
 
-      const modal = document.getElementById("recipeModal");
-      const jsonInput = document.getElementById("jsonInput");
+      document.getElementById("btnPauseResumeTimer").addEventListener("click", () => {
+        timerIsPaused = !timerIsPaused;
+        document.getElementById("btnPauseResumeTimer").innerText = timerIsPaused ? "Reanudar" : "Pausa";
+      });
+      document.getElementById("btnResetTimer").addEventListener("click", () => {
+        timerRemainingSeconds = timerInitialSeconds;
+        timerIsPaused = false;
+        document.getElementById("btnPauseResumeTimer").innerText = "Pausa";
+        updateTimerDisplay();
+      });
+      document.getElementById("btnCloseTimer").addEventListener("click", () => {
+        clearInterval(timerInterval);
+        document.getElementById("activeTimerBar").style.display = "none";
+      });
 
-      document.getElementById("btnNewRecipe").addEventListener("click", () => {
-        const template = {
-          id: "receta-" + Date.now(),
-          title: "Nueva Receta",
-          category: "General",
-          prepInstructions: [
-            "Instrucción previa (ej. precalentar horno a 180°C)"
-          ],
-          steps: [
-            {
-              action: "mezclar",
-              items: [
-                { name: "Ingrediente 1", metric: "100 g", imperial: "1 taza", amountMetric: 100, unitMetric: "g", amountImp: 1, unitImp: "taza" }
-              ]
-            },
-            {
-              action: "incorporar",
-              mergeWithPrevious: true,
-              items: [
-                { name: "Ingrediente 2", metric: "200 g", imperial: "2 tazas", amountMetric: 200, unitMetric: "g", amountImp: 2, unitImp: "tazas" }
-              ]
-            },
-            {
-              action: "hornear 30 min",
-              mergeAll: true,
-              items: []
-            }
-          ]
+      const convModal = document.getElementById("converterModal");
+      document.getElementById("btnConverter").addEventListener("click", () => {
+        calculateConversion();
+        convModal.style.display = "flex";
+      });
+      document.getElementById("convAmount").addEventListener("input", calculateConversion);
+      document.getElementById("convUnit").addEventListener("change", calculateConversion);
+      document.getElementById("convIngredient").addEventListener("change", calculateConversion);
+
+      document.querySelectorAll(".btn-close-modal").forEach(b => {
+        b.onclick = () => {
+          document.querySelectorAll(".modal-backdrop").forEach(m => m.style.display = "none");
         };
-
-        jsonInput.value = JSON.stringify(template, null, 2);
-        modal.style.display = "flex";
       });
 
-      document.getElementById("btnCloseModal").addEventListener("click", () => {
-        modal.style.display = "none";
+      const recipeModal = document.getElementById("recipeModal");
+      document.getElementById("btnNewRecipe").addEventListener("click", () => {
+        builderIngredients = [];
+        builderSteps = [
+          { action: "mezclar", timerMinutes: null, mergeWithPrevious: false, mergeAll: false, itemIndices: [] }
+        ];
+        document.getElementById("builderTitle").value = "";
+        document.getElementById("builderCategory").value = "";
+        document.getElementById("builderPrep").value = "";
+        renderBuilderIngredientsList();
+
+        document.getElementById("jsonInput").value = JSON.stringify(DEFAULT_RECIPES[0], null, 2);
+        recipeModal.style.display = "flex";
       });
 
-      document.getElementById("btnCancelModal").addEventListener("click", () => {
-        modal.style.display = "none";
+      document.getElementById("btnAddIngredient").addEventListener("click", () => {
+        const name = document.getElementById("builderIngName").value.trim();
+        const amount = parseFloat(document.getElementById("builderIngAmount").value);
+        const unit = document.getElementById("builderIngUnit").value;
+        if (!name || isNaN(amount)) {
+          alert("Por favor ingresa la cantidad y el nombre del ingrediente.");
+          return;
+        }
+        builderIngredients.push({ name, amount, unit });
+        document.getElementById("builderIngName").value = "";
+        document.getElementById("builderIngAmount").value = "";
+        renderBuilderIngredientsList();
       });
 
+      document.getElementById("btnAddStep").addEventListener("click", () => {
+        builderSteps.push({
+          action: "mezclar",
+          timerMinutes: null,
+          mergeWithPrevious: true,
+          mergeAll: false,
+          itemIndices: []
+        });
+        renderBuilderStepsUI();
+      });
+
+      const tabBuilder = document.getElementById("tabBuilder");
       const tabJson = document.getElementById("tabJson");
       const tabHelp = document.getElementById("tabHelp");
-      const tabContentJson = document.getElementById("tabContentJson");
-      const tabContentHelp = document.getElementById("tabContentHelp");
+      const contentBuilder = document.getElementById("tabContentBuilder");
+      const contentJson = document.getElementById("tabContentJson");
+      const contentHelp = document.getElementById("tabContentHelp");
 
-      tabJson.addEventListener("click", () => {
-        tabJson.classList.add("btn-active");
-        tabHelp.classList.remove("btn-active");
-        tabContentJson.style.display = "block";
-        tabContentHelp.style.display = "none";
-      });
-
-      tabHelp.addEventListener("click", () => {
-        tabHelp.classList.add("btn-active");
+      tabBuilder.onclick = () => {
+        tabBuilder.classList.add("btn-active");
         tabJson.classList.remove("btn-active");
-        tabContentJson.style.display = "none";
-        tabContentHelp.style.display = "block";
-      });
+        tabHelp.classList.remove("btn-active");
+        contentBuilder.style.display = "block";
+        contentJson.style.display = "none";
+        contentHelp.style.display = "none";
+      };
+      tabJson.onclick = () => {
+        tabJson.classList.add("btn-active");
+        tabBuilder.classList.remove("btn-active");
+        tabHelp.classList.remove("btn-active");
+        contentJson.style.display = "block";
+        contentBuilder.style.display = "none";
+        contentHelp.style.display = "none";
+      };
+      tabHelp.onclick = () => {
+        tabHelp.classList.add("btn-active");
+        tabBuilder.classList.remove("btn-active");
+        tabJson.classList.remove("btn-active");
+        contentHelp.style.display = "block";
+        contentBuilder.style.display = "none";
+        contentJson.style.display = "none";
+      };
 
       document.getElementById("btnSaveRecipe").addEventListener("click", () => {
-        try {
-          const parsed = JSON.parse(jsonInput.value);
-          if (!parsed.title || !parsed.steps || !Array.isArray(parsed.steps)) {
-            alert("El formato debe tener al menos 'title' y una lista de 'steps'.");
+        if (contentBuilder.style.display !== "none") {
+          const title = document.getElementById("builderTitle").value.trim();
+          if (!title) {
+            alert("Por favor escribe el nombre de la receta.");
             return;
           }
-          if (!parsed.id) parsed.id = "receta-" + Date.now();
+          if (builderIngredients.length === 0) {
+            alert("Debes agregar al menos un ingrediente.");
+            return;
+          }
 
-          recipes.push(parsed);
+          const prepRaw = document.getElementById("builderPrep").value.trim();
+          const prepInstructions = prepRaw ? prepRaw.split(";").map(s => s.trim()).filter(Boolean) : [];
+
+          const steps = builderSteps.map(st => {
+            const stepItems = st.itemIndices.map(idx => builderIngredients[idx]).filter(Boolean);
+            return {
+              action: st.action || "mezclar",
+              timerMinutes: st.timerMinutes || null,
+              mergeWithPrevious: st.mergeWithPrevious || false,
+              mergeAll: st.mergeAll || false,
+              items: stepItems
+            };
+          });
+
+          const newRecipe = {
+            id: "receta-" + Date.now(),
+            title: title,
+            category: document.getElementById("builderCategory").value.trim() || "General",
+            prepInstructions: prepInstructions,
+            steps: steps
+          };
+
+          recipes.push(newRecipe);
           saveToStorage();
-          currentRecipe = parsed;
+          currentRecipe = newRecipe;
           updateRecipeSelector();
           renderTable();
-          modal.style.display = "none";
-        } catch (err) {
-          alert("Error de sintaxis en el JSON: " + err.message);
+          recipeModal.style.display = "none";
+        } else {
+          try {
+            const parsed = JSON.parse(document.getElementById("jsonInput").value);
+            if (!parsed.title || !parsed.steps || !Array.isArray(parsed.steps)) {
+              alert("El JSON debe tener al menos 'title' y 'steps'.");
+              return;
+            }
+            if (!parsed.id) parsed.id = "receta-" + Date.now();
+            recipes.push(parsed);
+            saveToStorage();
+            currentRecipe = parsed;
+            updateRecipeSelector();
+            renderTable();
+            recipeModal.style.display = "none";
+          } catch (e) {
+            alert("Error de sintaxis en el JSON: " + e.message);
+          }
         }
       });
     });
