@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recetario - Diagramas de Flujo</title>
+  <style>
+    :root {
+      --primary: #15803d;
+      --primary-dark: #166534;
+      --primary-light: #dcfce7;
+      --border-color: #166534;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-area h1 {
+      font-size: 1.35rem;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo-area p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    button, select, input {
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    button:hover {
+      background-color: #f1f5f9;
+      border-color: #94a3b8;
+    }
+
+    button.btn-primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary-dark);
+      font-weight: 500;
+    }
+
+    button.btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    button.btn-active {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border-color: var(--primary);
+      font-weight: bold;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+
+    .recipe-meta-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .recipe-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .controls-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .control-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .scale-btn-group {
+      display: flex;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .scale-btn-group button {
+      border: none;
+      border-radius: 0;
+      padding: 0.35rem 0.65rem;
+      border-right: 1px solid #cbd5e1;
+    }
+
+    .scale-btn-group button:last-child {
+      border-right: none;
+    }
+
+    .table-viewport {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .table-wrapper {
+      display: inline-block;
+      min-width: 100%;
+    }
+
+    table.recipe-flow {
+      border-collapse: collapse;
+      background: #ffffff;
+      margin: 0 auto;
+      border: 2.5px solid var(--border-color);
+      width: 100%;
+    }
+
+    table.recipe-flow th,
+    table.recipe-flow td {
+      border: 1.5px solid var(--border-color);
+      padding: 8px 12px;
+      font-size: 0.95rem;
+      vertical-align: middle;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .prep-header-cell {
+      text-align: center;
+      font-weight: 500;
+      font-size: 1.05rem;
+      background: #fdfdfd;
+      color: #0f172a;
+      padding: 10px !important;
+    }
+
+    .ingredient-cell {
+      text-align: left;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      background: #ffffff;
+      min-width: 220px;
+    }
+
+    .ingredient-cell:hover {
+      background: #f0fdf4;
+    }
+
+    .ingredient-cell.completed {
+      background: #f1f5f9;
+      color: #94a3b8;
+      text-decoration: line-through;
+    }
+
+    .action-cell {
+      text-align: center;
+      vertical-align: middle;
+      font-weight: 600;
+      color: #0f172a;
+      background: #ffffff;
+      cursor: pointer;
+      min-width: 90px;
+      line-height: 1.35;
+      padding: 8px 14px !important;
+    }
+
+    .action-cell:hover {
+      background: #f0fdf4;
+    }
+
+    .action-cell.completed {
+      background: #f1f5f9;
+      color: #94a3b8;
+      text-decoration: line-through;
+    }
+
+    .empty-spacer-cell {
+      background: #ffffff;
+      border: 1.5px solid var(--border-color);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+
+    .modal-card {
+      background: white;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 1.75rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-header h2 {
+      font-size: 1.25rem;
+      color: var(--primary-dark);
+    }
+
+    textarea.code-editor {
+      width: 100%;
+      font-family: monospace;
+      font-size: 0.85rem;
+      min-height: 280px;
+      padding: 0.75rem;
+      background: #0f172a;
+      color: #38bdf8;
+      border-radius: 6px;
+      border: 1px solid #334155;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+
+    @media print {
+      header, .controls-group, .toolbar, .recipe-meta-card button {
+        display: none !important;
+      }
+      body {
+        background: white;
+        padding: 0;
+      }
+      .recipe-meta-card {
+        box-shadow: none;
+        border: none;
+        padding: 0 0 1rem 0;
+      }
+      .table-viewport {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        overflow: visible;
+      }
+      table.recipe-flow {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-content">
+      <div class="logo-area">
+        <h1>🍳 Recetas en Diagrama</h1>
+        <p>Formato tabular ("Cooking for Engineers")</p>
+      </div>
+
+      <div class="toolbar">
+        <select id="recipeSelector" aria-label="Seleccionar receta"></select>
+        <button id="btnNewRecipe" class="btn-primary">+ Cargar Receta</button>
+        <button id="btnWakeLock" title="Evita que se apague la pantalla del celular">💡 Pantalla Activa</button>
+        <button id="btnPrint" title="Imprimir o guardar como PDF">🖨️ Imprimir</button>
+        <button id="btnExportAll" title="Descargar copia de seguridad en JSON">💾 Respaldar</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="recipe-meta-card">
+      <div>
+        <h2 id="currentRecipeTitle" class="recipe-title">Cargando...</h2>
+        <span id="currentRecipeCategory" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;"></span>
+      </div>
+
+      <div class="controls-group">
+        <div class="control-item">
+          <span>Porciones:</span>
+          <div class="scale-btn-group">
+            <button class="scale-btn" data-scale="0.5">0.5x</button>
+            <button class="scale-btn btn-active" data-scale="1">1x</button>
+            <button class="scale-btn" data-scale="1.5">1.5x</button>
+            <button class="scale-btn" data-scale="2">2x</button>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <span>Unidades:</span>
+          <select id="unitSelector">
+            <option value="both">Ambas (Métrico e Imperial)</option>
+            <option value="metric">Solo Métrico (g, mL)</option>
+            <option value="imperial">Solo Imperial (oz, cups)</option>
+          </select>
+        </div>
+
+        <button id="btnResetCompleted" title="Restablecer ingredientes marcados">↺ Desmarcar</button>
+        <button id="btnDeleteCurrent" style="color: #dc2626;" title="Eliminar receta actual">🗑️</button>
+      </div>
+    </div>
+
+    <div class="table-viewport">
+      <div class="table-wrapper">
+        <table id="recipeFlowTable" class="recipe-flow"></table>
+      </div>
+    </div>
+  </main>
+
+  <div id="recipeModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modalTitle">Cargar Nueva Receta</h2>
+        <button id="btnCloseModal" style="border:none; font-size:1.25rem;">✕</button>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+        <button id="tabJson" class="btn-active" style="flex:1;">Editor JSON</button>
+        <button id="tabHelp" style="flex:1;">Guía del Formato</button>
+      </div>
+
+      <div id="tabContentJson">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+          Pega la estructura de la receta en formato JSON. Incluye las acciones y sus ingredientes correspondientes.
+        </p>
+        <textarea id="jsonInput" class="code-editor" spellcheck="false"></textarea>
+      </div>
+
+      <div id="tabContentHelp" style="display: none; font-size: 0.9rem; line-height: 1.6; color: #334155;">
+        <p><strong>Estructura del formato:</strong></p>
+        <ul style="padding-left: 1.25rem; margin: 0.5rem 0 1rem 0;">
+          <li><code>prepInstructions</code>: Pasos previos que van en el encabezado general (ej. precalentar horno).</li>
+          <li><code>steps</code>: Cada bloque es una columna de acción (ej. <em>melt</em>, <em>mix</em>, <em>fold in</em>, <em>bake</em>).</li>
+          <li><code>items</code>: Los ingredientes que ingresan en esa acción específica.</li>
+          <li><code>mergeWithPrevious: true</code>: Indica que esta acción toma los ingredientes nuevos y los une a lo anterior.</li>
+          <li><code>mergeAll: true</code>: Usado en pasos finales como hornear para unificar todo el diagrama.</li>
+        </ul>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btnCancelModal">Cancelar</button>
+        <button id="btnSaveRecipe" class="btn-primary">Guardar Receta</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_RECIPES = [
+      {
+        id: "espresso-cocoa-brownies",
+        title: "Espresso Cocoa Brownies",
+        category: "Pastelería",
+        prepInstructions: [
+          "Butter and flour an 8x8-in pan",
+          "Preheat oven to 350°F (170°C)"
+        ],
+        steps: [
+          {
+            action: "melt",
+            items: [
+              { name: "unsalted butter", metric: "115 g", imperial: "4 oz", amountMetric: 115, unitMetric: "g", amountImp: 4, unitImp: "oz" }
+            ]
+          },
+          {
+            action: "mix",
+            mergeWithPrevious: true,
+            items: [
+              { name: "sugar", metric: "200 g", imperial: "1 cup", amountMetric: 200, unitMetric: "g", amountImp: 1, unitImp: "cup" },
+              { name: "vanilla extract", metric: "2.5 mL", imperial: "1/4 tsp.", amountMetric: 2.5, unitMetric: "mL", amountImp: 0.25, unitImp: "tsp." },
+              { name: "fresh brewed espresso or very strong coffee", metric: "60 mL", imperial: "1 shot (4 Tbs)", amountMetric: 60, unitMetric: "mL", amountImp: 4, unitImp: "Tbs" }
+            ]
+          },
+          {
+            action: "mix",
+            mergeWithPrevious: true,
+            items: [
+              { name: "eggs", metric: "100 g", imperial: "2 large", amountMetric: 100, unitMetric: "g", amountImp: 2, unitImp: "large" }
+            ]
+          },
+          {
+            action: "fold in",
+            mergeWithPrevious: true,
+            items: [
+              { name: "all-purpose flour", metric: "80 g", imperial: "1/2 cup", amountMetric: 80, unitMetric: "g", amountImp: 0.5, unitImp: "cup" },
+              { name: "Hershey's cocoa powder", metric: "80 g", imperial: "1/3 cup", amountMetric: 80, unitMetric: "g", amountImp: 0.33, unitImp: "cup" },
+              { name: "baking soda", metric: "1.3 g", imperial: "1/4 tsp.", amountMetric: 1.3, unitMetric: "g", amountImp: 0.25, unitImp: "tsp." },
+              { name: "table salt", metric: "1.5 g", imperial: "1/4 tsp.", amountMetric: 1.5, unitMetric: "g", amountImp: 0.25, unitImp: "tsp." }
+            ]
+          },
+          {
+            action: "bake\\n350°F\\n(170°C)\\n30 to 40\\nmin",
+            mergeAll: true,
+            items: []
+          }
+        ]
+      },
+      {
+        id: "salsa-teriyaki",
+        title: "Salsa Teriyaki Casera",
+        category: "Salsas",
+        prepInstructions: [
+          "Tener listos los ingredientes medidos",
+          "Preparar olla pequeña a fuego medio-bajo"
+        ],
+        steps: [
+          {
+            action: "diluir",
+            items: [
+              { name: "almidón de maíz (maicena)", metric: "15 g", imperial: "1 cda", amountMetric: 15, unitMetric: "g", amountImp: 1, unitImp: "cda" },
+              { name: "agua fría", metric: "30 mL", imperial: "2 cdas", amountMetric: 30, unitMetric: "mL", amountImp: 2, unitImp: "cdas" }
+            ]
+          },
+          {
+            action: "hervir y disolver\\n(2 min)",
+            mergeWithPrevious: false,
+            items: [
+              { name: "salsa de soja", metric: "120 mL", imperial: "1/2 taza", amountMetric: 120, unitMetric: "mL", amountImp: 0.5, unitImp: "taza" },
+              { name: "azúcar rubia o mascabo", metric: "60 g", imperial: "1/4 taza", amountMetric: 60, unitMetric: "g", amountImp: 0.25, unitImp: "taza" },
+              { name: "mirin o vino blanco dulce", metric: "60 mL", imperial: "1/4 taza", amountMetric: 60, unitMetric: "mL", amountImp: 0.25, unitImp: "taza" },
+              { name: "jengibre fresco rallado", metric: "5 g", imperial: "1 cdita", amountMetric: 5, unitMetric: "g", amountImp: 1, unitImp: "cdita" },
+              { name: "ajo rallado", metric: "1 diente", imperial: "1 diente", amountMetric: 1, unitMetric: "diente", amountImp: 1, unitImp: "diente" }
+            ]
+          },
+          {
+            action: "espesar a fuego suave\\n(revolver 3 min)",
+            mergeAll: true,
+            items: []
+          }
+        ]
+      }
+    ];
+
+    let recipes = [];
+    let currentRecipe = null;
+    let currentScale = 1;
+    let currentUnitMode = "both";
+    let completedItems = new Set();
+    let wakeLock = null;
+
+    function initStorage() {
+      const stored = localStorage.getItem("cfe_recipes");
+      if (stored) {
+        try {
+          recipes = JSON.parse(stored);
+        } catch (e) {
+          recipes = DEFAULT_RECIPES;
+        }
+      } else {
+        recipes = DEFAULT_RECIPES;
+        saveToStorage();
+      }
+    }
+
+    function saveToStorage() {
+      localStorage.setItem("cfe_recipes", JSON.stringify(recipes));
+    }
+
+    function formatIngredient(item, scale, unitMode) {
+      const formatNum = (val) => {
+        if (!val) return "";
+        const scaled = val * scale;
+        return Number.isInteger(scaled) ? scaled : scaled.toFixed(1).replace(/\\.0$/, "");
+      };
+
+      if (unitMode === "metric") {
+        if (item.amountMetric) {
+          return `${formatNum(item.amountMetric)} ${item.unitMetric} ${item.name}`;
+        }
+        return `${item.metric || ""} ${item.name}`;
+      } else if (unitMode === "imperial") {
+        if (item.amountImp) {
+          return `${formatNum(item.amountImp)} ${item.unitImp} ${item.name}`;
+        }
+        return `${item.imperial || ""} ${item.name}`;
+      } else {
+        let amountText = "";
+        if (item.amountImp && item.amountMetric) {
+          amountText = `${formatNum(item.amountImp)} ${item.unitImp} (${formatNum(item.amountMetric)} ${item.unitMetric})`;
+        } else if (item.imperial && item.metric) {
+          amountText = `${item.imperial} (${item.metric})`;
+        } else {
+          amountText = item.metric || item.imperial || "";
+        }
+        return `${amountText} ${item.name}`.trim();
+      }
+    }
+
+    function renderTable() {
+      if (!currentRecipe) return;
+
+      document.getElementById("currentRecipeTitle").innerText = currentRecipe.title;
+      document.getElementById("currentRecipeCategory").innerText = currentRecipe.category || "Receta";
+
+      const table = document.getElementById("recipeFlowTable");
+      table.innerHTML = "";
+
+      const flatIngredients = [];
+      const stageRows = [];
+
+      currentRecipe.steps.forEach((step, stepIndex) => {
+        const startRow = flatIngredients.length;
+        if (step.items && step.items.length > 0) {
+          step.items.forEach(item => {
+            flatIngredients.push({ ...item, stepIndex });
+          });
+        }
+        const endRow = flatIngredients.length - 1;
+        stageRows.push({ startRow, endRow: Math.max(startRow, endRow), count: step.items ? step.items.length : 0 });
+      });
+
+      const totalRows = flatIngredients.length;
+      const numColumns = currentRecipe.steps.length;
+
+      const totalColspan = numColumns + 1;
+      if (currentRecipe.prepInstructions && currentRecipe.prepInstructions.length > 0) {
+        currentRecipe.prepInstructions.forEach(instr => {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.className = "prep-header-cell";
+          td.colSpan = totalColspan;
+          td.innerText = instr;
+          tr.appendChild(td);
+          table.appendChild(tr);
+        });
+      }
+
+      const grid = Array.from({ length: totalRows }, () => Array(numColumns).fill(null));
+      let accumulatedRows = 0;
+
+      currentRecipe.steps.forEach((step, colIndex) => {
+        const stage = stageRows[colIndex];
+
+        if (step.mergeAll) {
+          grid[0][colIndex] = {
+            type: "action",
+            action: step.action,
+            rowspan: totalRows,
+            id: `action-${currentRecipe.id}-${colIndex}`
+          };
+          for (let r = 1; r < totalRows; r++) {
+            grid[r][colIndex] = { type: "covered" };
+          }
+        } else if (step.mergeWithPrevious) {
+          accumulatedRows += stage.count;
+          const startRow = 0;
+          const rowspan = accumulatedRows;
+
+          grid[startRow][colIndex] = {
+            type: "action",
+            action: step.action,
+            rowspan: rowspan,
+            id: `action-${currentRecipe.id}-${colIndex}`
+          };
+          for (let r = 1; r < rowspan; r++) {
+            grid[r][colIndex] = { type: "covered" };
+          }
+        } else {
+          accumulatedRows = stage.count;
+          if (stage.count > 0) {
+            grid[stage.startRow][colIndex] = {
+              type: "action",
+              action: step.action,
+              rowspan: stage.count,
+              id: `action-${currentRecipe.id}-${colIndex}`
+            };
+            for (let r = stage.startRow + 1; r <= stage.endRow; r++) {
+              grid[r][colIndex] = { type: "covered" };
+            }
+          }
+        }
+      });
+
+      for (let c = 0; c < numColumns; c++) {
+        let r = 0;
+        while (r < totalRows) {
+          if (grid[r][c] === null) {
+            let emptySpan = 1;
+            while (r + emptySpan < totalRows && grid[r + emptySpan][c] === null) {
+              emptySpan++;
+            }
+            grid[r][c] = { type: "spacer", rowspan: emptySpan };
+            for (let k = 1; k < emptySpan; k++) {
+              grid[r + k][c] = { type: "covered" };
+            }
+            r += emptySpan;
+          } else {
+            r++;
+          }
+        }
+      }
+
+      flatIngredients.forEach((ing, rowIndex) => {
+        const tr = document.createElement("tr");
+
+        const tdIng = document.createElement("td");
+        tdIng.className = "ingredient-cell";
+        const ingId = `ing-${currentRecipe.id}-${rowIndex}`;
+        if (completedItems.has(ingId)) {
+          tdIng.classList.add("completed");
+        }
+        tdIng.innerText = formatIngredient(ing, currentScale, currentUnitMode);
+        tdIng.onclick = () => {
+          tdIng.classList.toggle("completed");
+          if (tdIng.classList.contains("completed")) {
+            completedItems.add(ingId);
+          } else {
+            completedItems.delete(ingId);
+          }
+        };
+        tr.appendChild(tdIng);
+
+        for (let colIndex = 0; colIndex < numColumns; colIndex++) {
+          const cell = grid[rowIndex][colIndex];
+          if (!cell || cell.type === "covered") {
+            continue;
+          }
+
+          const tdAction = document.createElement("td");
+          if (cell.rowspan > 1) {
+            tdAction.rowSpan = cell.rowspan;
+          }
+
+          if (cell.type === "action") {
+            tdAction.className = "action-cell";
+            tdAction.innerHTML = cell.action.replace(/\\n/g, "<br>");
+            if (completedItems.has(cell.id)) {
+              tdAction.classList.add("completed");
+            }
+            tdAction.onclick = () => {
+              tdAction.classList.toggle("completed");
+              if (tdAction.classList.contains("completed")) {
+                completedItems.add(cell.id);
+              } else {
+                completedItems.delete(cell.id);
+              }
+            };
+          } else if (cell.type === "spacer") {
+            tdAction.className = "empty-spacer-cell";
+          }
+
+          tr.appendChild(tdAction);
+        }
+
+        table.appendChild(tr);
+      });
+    }
+
+    function updateRecipeSelector() {
+      const sel = document.getElementById("recipeSelector");
+      sel.innerHTML = "";
+      recipes.forEach(r => {
+        const opt = document.createElement("option");
+        opt.value = r.id;
+        opt.innerText = r.title;
+        sel.appendChild(opt);
+      });
+
+      if (currentRecipe) {
+        sel.value = currentRecipe.id;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initStorage();
+      currentRecipe = recipes[0];
+      updateRecipeSelector();
+      renderTable();
+
+      document.getElementById("recipeSelector").addEventListener("change", (e) => {
+        const found = recipes.find(r => r.id === e.target.value);
+        if (found) {
+          currentRecipe = found;
+          completedItems.clear();
+          renderTable();
+        }
+      });
+
+      document.querySelectorAll(".scale-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".scale-btn").forEach(b => b.classList.remove("btn-active"));
+          btn.classList.add("btn-active");
+          currentScale = parseFloat(btn.dataset.scale);
+          renderTable();
+        });
+      });
+
+      document.getElementById("unitSelector").addEventListener("change", (e) => {
+        currentUnitMode = e.target.value;
+        renderTable();
+      });
+
+      document.getElementById("btnResetCompleted").addEventListener("click", () => {
+        completedItems.clear();
+        renderTable();
+      });
+
+      document.getElementById("btnPrint").addEventListener("click", () => {
+        window.print();
+      });
+
+      const btnWakeLock = document.getElementById("btnWakeLock");
+      btnWakeLock.addEventListener("click", async () => {
+        if ("wakeLock" in navigator) {
+          if (!wakeLock) {
+            try {
+              wakeLock = await navigator.wakeLock.request("screen");
+              btnWakeLock.classList.add("btn-active");
+              btnWakeLock.innerText = "💡 Pantalla Activa (ON)";
+              wakeLock.addEventListener("release", () => {
+                wakeLock = null;
+                btnWakeLock.classList.remove("btn-active");
+                btnWakeLock.innerText = "💡 Pantalla Activa";
+              });
+            } catch (err) {
+              alert("No se pudo activar: " + err.message);
+            }
+          } else {
+            await wakeLock.release();
+            wakeLock = null;
+            btnWakeLock.classList.remove("btn-active");
+            btnWakeLock.innerText = "💡 Pantalla Activa";
+          }
+        } else {
+          alert("Tu navegador no soporta mantener la pantalla activa.");
+        }
+      });
+
+      document.getElementById("btnExportAll").addEventListener("click", () => {
+        const blob = new Blob([JSON.stringify(recipes, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "mis_recetas_diagrama.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      document.getElementById("btnDeleteCurrent").addEventListener("click", () => {
+        if (recipes.length <= 1) {
+          alert("No puedes eliminar la única receta.");
+          return;
+        }
+        if (confirm(`¿Eliminar "${currentRecipe.title}"?`)) {
+          recipes = recipes.filter(r => r.id !== currentRecipe.id);
+          saveToStorage();
+          currentRecipe = recipes[0];
+          updateRecipeSelector();
+          renderTable();
+        }
+      });
+
+      const modal = document.getElementById("recipeModal");
+      const jsonInput = document.getElementById("jsonInput");
+
+      document.getElementById("btnNewRecipe").addEventListener("click", () => {
+        const template = {
+          id: "receta-" + Date.now(),
+          title: "Nueva Receta",
+          category: "General",
+          prepInstructions: [
+            "Instrucción previa (ej. precalentar horno a 180°C)"
+          ],
+          steps: [
+            {
+              action: "mezclar",
+              items: [
+                { name: "Ingrediente 1", metric: "100 g", imperial: "1 taza", amountMetric: 100, unitMetric: "g", amountImp: 1, unitImp: "taza" }
+              ]
+            },
+            {
+              action: "incorporar",
+              mergeWithPrevious: true,
+              items: [
+                { name: "Ingrediente 2", metric: "200 g", imperial: "2 tazas", amountMetric: 200, unitMetric: "g", amountImp: 2, unitImp: "tazas" }
+              ]
+            },
+            {
+              action: "hornear 30 min",
+              mergeAll: true,
+              items: []
+            }
+          ]
+        };
+
+        jsonInput.value = JSON.stringify(template, null, 2);
+        modal.style.display = "flex";
+      });
+
+      document.getElementById("btnCloseModal").addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+
+      document.getElementById("btnCancelModal").addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+
+      const tabJson = document.getElementById("tabJson");
+      const tabHelp = document.getElementById("tabHelp");
+      const tabContentJson = document.getElementById("tabContentJson");
+      const tabContentHelp = document.getElementById("tabContentHelp");
+
+      tabJson.addEventListener("click", () => {
+        tabJson.classList.add("btn-active");
+        tabHelp.classList.remove("btn-active");
+        tabContentJson.style.display = "block";
+        tabContentHelp.style.display = "none";
+      });
+
+      tabHelp.addEventListener("click", () => {
+        tabHelp.classList.add("btn-active");
+        tabJson.classList.remove("btn-active");
+        tabContentJson.style.display = "none";
+        tabContentHelp.style.display = "block";
+      });
+
+      document.getElementById("btnSaveRecipe").addEventListener("click", () => {
+        try {
+          const parsed = JSON.parse(jsonInput.value);
+          if (!parsed.title || !parsed.steps || !Array.isArray(parsed.steps)) {
+            alert("El formato debe tener al menos 'title' y una lista de 'steps'.");
+            return;
+          }
+          if (!parsed.id) parsed.id = "receta-" + Date.now();
+
+          recipes.push(parsed);
+          saveToStorage();
+          currentRecipe = parsed;
+          updateRecipeSelector();
+          renderTable();
+          modal.style.display = "none";
+        } catch (err) {
+          alert("Error de sintaxis en el JSON: " + err.message);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
